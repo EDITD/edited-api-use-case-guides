@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "editedapi"
+version = "1.0.0"
+description = "A module that provides some functions which enable common use cases with the EDITED API"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [
+  { name = "EDITED" }
+]
+dependencies = [
+  "requests",
+  "urllib3",
+  "configparser",
+  "pandas"
+]
+
+[project.urls]
+Homepage = "https://github.com/EDITD/edited-api-use-case-guides/tree/main"
