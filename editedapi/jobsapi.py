@@ -141,12 +141,8 @@ def get_file(url, output_file):
     Raises:
         None
     """
-    r = requests.get(url, stream=True)
-    r.raw.decode_content = False  # Prevent automatic decompression
-
+    file_data = requests.get(url)
     with open(output_file, "wb") as file:  # "wb" = write in binary
-        # Read directly from r.raw to preserve compression
-        for chunk in r.raw.stream(1024 * 1024):  # 1MB chunks
-            file.write(chunk)
+        file.write(file_data.content)
 
     return None
