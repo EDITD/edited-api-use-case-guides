@@ -53,7 +53,6 @@ job_id = submit_job(
     )
 
 next_token=None
-idx=0 #initialize file counter
 
 #Loop every 30 seconds
 while True:
@@ -79,6 +78,7 @@ while True:
         end_date = job_status.get("meta", {}).get("end_date")
         urls = job_status.get("urls", [])
  
+        idx=0
         #Loop through all urls that are ready for download and download them to the
         #configured directory
         for url in urls:
