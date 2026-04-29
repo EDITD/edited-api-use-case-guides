@@ -24,6 +24,7 @@ logging.basicConfig(level=numeric_level)
 # === CONFIGURATION FROM config.ini ===
 API_KEY = get("api", "api_key")
 FILTERSET_ID = get("api", "filterset_id")
+REGION = get("api", "region", default="us") # API region - "us" or "eu"
 HEADERS = {"X-API-KEY": API_KEY}
 
 # === WINDOW OF ANALYSIS ===
@@ -44,15 +45,17 @@ if not os.path.isdir(absolute_path):
 # Submit job request
 job_id = submit_job(
     api_key=API_KEY,
-    job_name="Kohl's Footwear", 
-    start_date=START_DATE, 
+    job_name="Kohl's Footwear",
+    start_date=START_DATE,
     end_date=END_DATE,
     granularity=GRANULARITY,
     vertical="apparel",
-    filterset_id=FILTERSET_ID
+    filterset_id=FILTERSET_ID,
+    region=REGION
     )
 
 next_token=None
+idx=0
 
 #Loop every 30 seconds
 while True:
@@ -60,7 +63,8 @@ while True:
     job_status = result_files(
         api_key=API_KEY,
         job_id=job_id,
-        next_token=next_token
+        next_token=next_token,
+        region=REGION
     )
 
     #Get the current job status
@@ -77,8 +81,7 @@ while True:
         start_date = job_status.get("meta", {}).get("start_date")
         end_date = job_status.get("meta", {}).get("end_date")
         urls = job_status.get("urls", [])
- 
-        idx=0
+
         #Loop through all urls that are ready for download and download them to the
         #configured directory
         for url in urls:

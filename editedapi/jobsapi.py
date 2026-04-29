@@ -7,7 +7,7 @@ import json
 logger = logging.getLogger(__name__)
 
 # Function to pull schema data from the EDITED API
-def submit_job(api_key, job_name, start_date, end_date, granularity, newest_first=False, vertical="apparel", currency=None, fields=None, legacy_filters=None, filterset_id=None):
+def submit_job(api_key, job_name, start_date, end_date, granularity, newest_first=False, vertical="apparel", currency=None, fields=None, legacy_filters=None, filterset_id=None, region="us"):
     """Builds a jobs request and submits it to the jobs API
 
     Args:
@@ -22,6 +22,7 @@ def submit_job(api_key, job_name, start_date, end_date, granularity, newest_firs
         fields: The fields to retrieve. If not specified, all fields are retrieved.
         legacy_filters: The filters to submit to the job (Required unless using filterset_id)
         filterset_id: Filter Set ID for the job (Required unless passing in legacy_filters)
+        region: API region - "us" or "eu" (defaults to "us")
 
     Returns:
         A job id string
@@ -30,6 +31,7 @@ def submit_job(api_key, job_name, start_date, end_date, granularity, newest_firs
         None
     """
     HEADERS = {"X-API-KEY": api_key}
+    BASE_URL = f"https://api-{region}.edited.com"
 
     if legacy_filters is None and filterset_id is None:
         logger.error (f"Must pass at least one of 'legacy_filters' or 'filterset_id' to submit_job()")
@@ -63,7 +65,7 @@ def submit_job(api_key, job_name, start_date, end_date, granularity, newest_firs
 
     try:
         response = requests.post(
-            url="https://api-us.edited.com/v1/options/history/submit",
+            url=f"{BASE_URL}/v1/options/history/submit",
             headers=HEADERS,
             json=REQUEST,
             timeout=60.0
@@ -89,13 +91,14 @@ def submit_job(api_key, job_name, start_date, end_date, granularity, newest_firs
         raise
 
 # Function to pull schema data from the EDITED API
-def result_files(api_key, job_id, next_token=None):
+def result_files(api_key, job_id, next_token=None, region="us"):
     """Polls for status of a currently running job
 
     Args:
         api_key: API Key to run the request
         job_id: Job ID of the running job
         next_token: Token for the next set of results
+        region: API region - "us" or "eu" (defaults to "us")
 
     Returns:
         API response
@@ -104,10 +107,11 @@ def result_files(api_key, job_id, next_token=None):
         None
     """
     HEADERS = {"X-API-KEY": api_key}
+    BASE_URL = f"https://api-{region}.edited.com"
 
     try:
         response = requests.get(
-            url=f"https://api-us.edited.com/v1/jobs/{job_id}/result-files",
+            url=f"{BASE_URL}/v1/jobs/{job_id}/result-files",
             params={"next": next_token} if next_token else None,
             headers=HEADERS,
             timeout=60.0
