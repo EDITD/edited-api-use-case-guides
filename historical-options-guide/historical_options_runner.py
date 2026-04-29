@@ -45,7 +45,7 @@ if not os.path.isdir(absolute_path):
 # Submit job request
 job_id = submit_job(
     api_key=API_KEY,
-    job_name="Kohl's Footwear",
+    job_name="Sample Jobs API",
     start_date=START_DATE,
     end_date=END_DATE,
     granularity=GRANULARITY,
