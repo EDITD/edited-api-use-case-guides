@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+requires = ["setuptools>=64", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "editedapi"
-version = "1.0.0"
+version = "1.0.1"
 description = "A module that provides some functions which enable common use cases with the EDITED API"
 readme = "README.md"
 requires-python = ">=3.8"
