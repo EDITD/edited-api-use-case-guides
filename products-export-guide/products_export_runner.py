@@ -38,7 +38,13 @@ OUTPUT_CSV = get("api", "products_csv", default="products_export.csv")
 
 # API key is only needed to fetch the category taxonomy for the Product Types
 # column. Without it, Product Types falls back to the raw product_searches tags.
-API_KEY = get("api", "api_key", default="")
+# A fresh config.ini ships with the sentinel placeholder `<YOUR_API_KEY>`; treat
+# any unfilled `<...>` placeholder (or blank) as unset so we fall back cleanly
+# instead of sending a bogus key.
+_api_key = get("api", "api_key", default="").strip()
+if _api_key.startswith("<") and _api_key.endswith(">"):
+    _api_key = ""
+API_KEY = _api_key
 
 # The display-currency price columns come straight from the record's `_price`
 # family, which is denominated in whatever currency the JOB was configured with
@@ -245,6 +251,7 @@ def transform(record, taxonomy=None):
 
 def main():
     input_dir = os.path.abspath(os.path.expanduser(INPUT_DIR))
+    output_csv = os.path.abspath(os.path.expanduser(OUTPUT_CSV))
     files = sorted(
         glob.glob(os.path.join(input_dir, "*.ndjson.gz"))
         + glob.glob(os.path.join(input_dir, "*.ndjson"))
@@ -266,7 +273,7 @@ def main():
         logger.info(f"Loaded {len(taxonomy)} taxonomy nodes for Product Types.")
 
     rows_written = 0
-    with open(OUTPUT_CSV, "w", newline="", encoding="utf-8-sig") as out:
+    with open(output_csv, "w", newline="", encoding="utf-8-sig") as out:
         writer = csv.DictWriter(out, fieldnames=HEADERS)
         writer.writeheader()
         for path in files:
@@ -279,7 +286,7 @@ def main():
                     writer.writerow(transform(json.loads(line), taxonomy))
                     rows_written += 1
 
-    logger.info(f"Wrote {rows_written} rows to {os.path.abspath(OUTPUT_CSV)}")
+    logger.info(f"Wrote {rows_written} rows to {output_csv}")
 
 
 if __name__ == "__main__":
