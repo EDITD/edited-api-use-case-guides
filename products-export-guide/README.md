@@ -196,10 +196,50 @@ python products-export-guide/products_export_runner.py
 
 ## Output Example
 
-| Name | Retailer | Category | Product Types | Normalized Color | Color Option Name | Original Currency | Current Price (original currency) | SKUs Available | Sizes |
-|---|---|---|---|---|---|---|---|---|---|
-| Wrap around hoop earrings | Massimo Dutti (IT) | Accessories | Jewellery, Accessories, Earrings | Silver | Argento_808 | EUR | 40.0 | 1/1 | One Size |
-| Leather mule clogs | Massimo Dutti (IT) | Footwear | Mule, Footwear, Shoes | Brown | Marrone_700 | EUR | 100.0 | 8/8 | 35, 36, 37, 38, 39, 40, 41, 42 |
+Two real rows from a Massimo Dutti (IT) export, showing all 37 columns. The CSV
+holds one product per row; it is transposed here (columns as rows) so the full
+set is readable on the page. `Product Types` is shown as the raw-tag fallback (no
+`api_key`); `Description` and `Care information` are truncated.
+
+| Field | Voluminous hoop earrings | Hair on leather clogs with wooden sole |
+|---|---|---|
+| Name | Voluminous hoop earrings | Hair on leather clogs with wooden sole |
+| URL | https://www.massimodutti.com/it/orecchini-a-cerchio-voluminosi-l04605821 | https://www.massimodutti.com/it/sabot-in-pelle-con-pelliccia-sintetica-suola-di-legno-l11406750 |
+| Retailer | Massimo Dutti (IT) | Massimo Dutti (IT) |
+| Brand | Massimo Dutti | Massimo Dutti |
+| Segment | Mass | Mass |
+| Gender | Women | Women |
+| Category | Accessories | Footwear |
+| Product Types | Jewellery, Accessories, Earrings | Footwear, Shoes, Other Shoes |
+| Details | Fabrication | Fur (incl. Faux), Heeled, Fabrication, Leather (incl faux leather), Footwear |
+| Normalized Color | Gold | Brown |
+| Color Option Name | Dorato_303 | Marrone_700 |
+| Activewear | Non-activewear | Non-activewear |
+| Pattern | Plain | Product has no pattern data |
+| Full Price (EUR) | 30.0 | 149.0 |
+| Current Price (EUR) | 30.0 | 99.95 |
+| First Price (EUR) | 29.95 | 149.0 |
+| Original Currency | EUR | EUR |
+| Full Price (original currency) | 30.0 | 149.0 |
+| Current Price (original currency) | 30.0 | 99.95 |
+| First Price (original currency) | 29.95 | 149.0 |
+| Current Discount Percentage | 0.0 | 0.3291946308724832 |
+| Advertised Previous Price (EUR) |  | 149.0 |
+| Advertised Previous Price (original currency) |  | 149.0 |
+| Advertised Discount Percentage |  | 0.3291946308724832 |
+| Date First Discounted |  | 2026-07-04 |
+| SKUs Available | 1/1 | 6/8 |
+| Date First Seen | 2026-06-09 | 2026-02-04 |
+| Num Replenishments | 1 | 0 |
+| Days to Majority SKU sellout |  | 80 |
+| Days to First sellout |  |  |
+| EDITED Product ID | 17e152b2b7f96f9e904a7edf1a6486b643a1fabe | 1d3c88c4d35c69426ee5109f34ed6af4ca4085ae |
+| Retailer Product ID | 61727252 | 57219423 |
+| Season | ss26 | ss26 |
+| Description | Irregular design hoop earrings. Rounded and voluminous… | PRODUCTS IN SPAGNAP leather cowhide with fur finish Sli… |
+| Care information | 100%% Ottone… | 100%% Pelliccia Di Mucca… |
+| Date Last Seen | 2026-07-08T08:29:59 | 2026-07-08T07:20:41 |
+| Sizes | One Size | 35, 36, 37, 38, 39, 40, 41, 42 |
 
 > The `Product Types` values above are the raw-tag fallback (no `api_key`). With
 > a key, the earring renders as the UI does — `Jewellery, Jewellery > Earrings`.
