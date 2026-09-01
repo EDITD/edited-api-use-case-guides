@@ -18,8 +18,10 @@ differ in three ways:
 2. **Value formatting** — capitalisation, enum → label mapping, list joining,
    price scaling, and percentage scaling all differ.
 3. **A few UI columns are computed, not stored** — target-currency prices, the
-   Product Types hierarchy, and sellout timing are **not present** in a single
-   job-output record and cannot be reproduced exactly from it (see
+   Product Types hierarchy, and sellout timing are not simply read off a single
+   job-output record. Each is reproducible, but only once you know where the
+   value comes from: the job's own currency, a join against the searches schema,
+   and a specific pair of sellout fields respectively (see
    [Known limitations](#known-limitations)).
 
 Everything in this guide was verified field-by-field against a real export
@@ -51,7 +53,7 @@ below. `S(x)` = capitalise first letter only; `T(x)` = title case.
 | Segment | `tier` | `T(tier)` → `mass` → `Mass` | ✅ |
 | Gender | `gender` | `T(gender)` → `women` → `Women` | ✅ |
 | Category | `cs_grp` | replace `-` with space, then `S()` → `suits-sets` → `Suits sets` | ✅ |
-| Product Types | `product_searches_data` (IDs) + searches schema | hierarchy rebuilt from the taxonomy; **set of paths exact, comma order is a UI detail**, see below | ✅* |
+| Product Types | `product_searches_data` (IDs) + searches schema | hierarchy rebuilt from the taxonomy, deduplicated; **set of values exact, comma order not reproducible**, see below | ✅* |
 | Details | `product_details` | `", ".join(...)` | ✅ |
 | Normalized Color | `predominant_colour` | `T()` → `silver` → `Silver` | ✅ |
 | Color Option Name | `colour_name` | `S()` → `argento_808` → `Argento_808` | ✅ |
@@ -136,10 +138,19 @@ is genuinely as-of-date: a 6 May export used 0.8536 and an 8 Jul export used
 
 ## Known limitations
 
-None material: every Products column reproduces exactly, provided the job is
-run **in the currency you want** and (for Product Types) with an `api_key` set.
-The only non-deterministic detail is the comma **ordering** within Product Types
-(see below) — the set of values is exact.
+Every Products **value** reproduces exactly, provided the job is run **in the
+currency you want** and (for Product Types) with an `api_key` set. Two caveats:
+
+- **The comma order within Product Types is not reproducible.** The export joins
+  that column over a Python `set`, so its order comes from the exporting process,
+  not from the product. The set of values is exact; the order is not, and no
+  amount of rule-fitting will fix it. Compare that one column as a set — see
+  [the ordering section](#product-types-comma-order-isnt-reproducible).
+  This is the only reason a Products row will fail a naive byte-level diff.
+- **The taxonomy the export uses is version-pinned**, while this script reads the
+  live schema. If a category has been renamed or reparented since the export's
+  pinned version, that value will differ. Worth checking first if a Product Types
+  value looks wrong in a way ordering does not explain.
 
 ### Sellout timing is reproducible (watch the field name)
 
@@ -153,26 +164,50 @@ it first sold out on 6 Jul (`date_first_sellout`) and fully restocked on 8 Jul
 (`date_full_restock`). **Do not** use `days_to_first_sellthrough` for these
 columns — it is a different metric and is null for many of these products.
 
-### Product Types: reconstructed, order aside
+### Product Types: reconstructed from the taxonomy
 
 `product_searches` is a flat, unordered set of taxonomy tags
 (e.g. `["Mule", "Footwear", "Shoes"]`), so on its own it can't produce the UI's
 breadcrumb hierarchy (`Shoes, Shoes > Mule`). But the record also carries
 `product_searches_data` with the taxonomy **IDs**, and the
 `GET /schema/v1/searches` endpoint returns the full category tree
-(`id`, `name`, `type`, `parent_id`). With both, the rule is:
+(`id`, `name`, `type`, `parent_id`). The record carries IDs only: names, types and
+parents are resolved by joining on `id` against that schema — one call per run,
+not per product. With both, the rule is:
 
 - drop every `top_level_category` node;
+- drop any node flagged `visible: false`, which the export excludes;
 - emit each `subcategory` name as-is (`Shoes`);
-- emit each `style` node as `"<parent subcategory> > <style>"` (`Shoes > Mule`).
+- emit each `style` node as `"<parent subcategory> > <style>"` (`Shoes > Mule`);
+- collapse duplicates, keeping the first occurrence.
+
+This reproduces the **set** of values exactly. It does not reproduce the comma
+**order**, and neither can anything else — see
+[the ordering section](#product-types-comma-order-isnt-reproducible)
+below. **Compare this column as a set.**
+
+Only `style` nodes take a parent prefix. Not every branch of the taxonomy has a
+style level: `Dresses` and `Tops`, among others, stop at the subcategory. A
+product tagged `Category: Dresses` / `Product Types: Bodycon` therefore renders
+as the bare name `Bodycon` — never `Dresses > Bodycon`. Ordering is moot for
+these single-entry rows.
+
+A record whose only tags are top-level categories yields **no** entries, so the
+cell is empty. That is faithful to the export, not a failed lookup.
 
 When an `api_key` is configured the script fetches the schema once and applies
 this rule; otherwise it falls back to the raw tags. Verified against the export
 with the live 630-node taxonomy: the **set** of paths matches exactly on all
-**3,565 / 3,565** rows. Of those, **1,019 differ only in comma order** — two
-products with an identical tag structure can render in a different order in the
-UI (`Jewellery, Jewellery > Earrings` vs `Jewellery > Necklaces, Jewellery`),
-which tells us the ordering is a UI-side detail not encoded in the record.
+**3,565 / 3,565** rows.
+
+### Product Types comma order isn't reproducible
+
+The order these values are joined in comes from the export process, not the
+product — it isn't derived from the data, and this script can't reconstruct or
+match it. **Compare this column as a set**: split on `", "` and sort both sides
+rather than diffing it as an ordered string. Two exports of the same list can
+even render this column differently from each other — that's expected, not a
+bug.
 
 ## Configuration
 
@@ -242,5 +277,6 @@ set is readable on the page. `Product Types` is shown as the raw-tag fallback (n
 | Sizes | One Size | 35, 36, 37, 38, 39, 40, 41, 42 |
 
 > The `Product Types` values above are the raw-tag fallback (no `api_key`). With
-> a key, the earring renders as the UI does — `Jewellery, Jewellery > Earrings`.
-> See [Product Types](#product-types-reconstructed-order-aside).
+> a key, the earring resolves to the two values `Jewellery` and
+> `Jewellery > Earrings`; the comma order the export happens to use is not
+> reproducible. See [Product Types](#product-types-reconstructed-from-the-taxonomy).
