@@ -6,8 +6,9 @@
 # See README.md for a field-by-field explanation of every transformation. Every
 # column reproduces exactly, provided the job is run in the currency you want in
 # the CSV and (for the Product Types hierarchy) an api_key is set for the schema
-# lookup. The only non-deterministic detail is the comma ORDERING within Product
-# Types, a UI-side detail — the set of values is exact.
+# lookup. The one exception is the comma ORDER within Product Types, which the
+# export does not derive from the data -- compare that column as a set. Read the
+# README section on Product Types before trying to "fix" the order.
 
 # === IMPORT LIBRARIES ===
 import csv
@@ -86,17 +87,22 @@ def build_taxonomy(api_key):
     return {
         node["id"]: (node["name"], node["type"], node["parent_id"])
         for node in schema["searches"]
+        # Excluded only when explicitly False, so a schema without `visible` behaves as before.
+        if node.get("visible") is not False
     }
 
 
 def product_types(record, taxonomy):
     """Render the Product Types column.
 
-    With the taxonomy, mirror the UI: drop top-level categories, emit each
-    subcategory name and each style as "<parent subcategory> > <style>". The UI
-    orders these entries in a way that is not encoded in the record, so the set
-    of paths matches exactly but the comma order may differ. Without the
-    taxonomy, fall back to the raw product_searches tags.
+    With the taxonomy, mirror the export: drop top-level categories, emit each
+    subcategory name as-is and each style as "<parent subcategory> > <style>",
+    collapsing repeats. Without the taxonomy, fall back to the raw
+    product_searches tags.
+
+    Comma order is not reproducible -- see README. A record with no style-level
+    tag renders as a bare name (`Bodycon`, never `Dresses > Bodycon`); a record
+    with only top-level tags renders as an empty cell.
     """
     if taxonomy is None:
         return ", ".join(record.get("product_searches") or []) or None
@@ -113,7 +119,8 @@ def product_types(record, taxonomy):
             parent = taxonomy.get(parent_id)
             styles.append(f"{parent[0] if parent else '?'} > {name}")
         # top_level_category nodes are intentionally dropped
-    return ", ".join(subs + styles) or None
+    # Order is arbitrary (see README); dict.fromkeys collapses repeats like the export's set().
+    return ", ".join(dict.fromkeys(subs + styles)) or None
 
 
 def sentence_case(value):

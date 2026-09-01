@@ -3,6 +3,18 @@
 All notable changes to the EDITED API Use Case Guides are recorded here.
 This project follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
+## [1.1.1] - 2026-09-01
+
+### Fixed
+- **Products Export guide** — deduplicated repeated Product Types values (two
+  taxonomy IDs resolving to the same display string no longer render twice)
+  and excluded taxonomy nodes flagged `visible: false`, matching the UI export.
+- Clarified that Product Types is reconstructed via a join between the record's
+  taxonomy IDs and the `GET /schema/v1/searches` endpoint, not from fields
+  already present on the record.
+- Corrected the guide's explanation of Product Types comma ordering: it is not
+  a UI-side detail, and cannot be reproduced — compare that column as a set.
+
 ## [1.1.0] - 2026-07-13
 
 ### Added
