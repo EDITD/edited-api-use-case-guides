@@ -14,7 +14,8 @@ CONFIG_PATH = os.path.join(BASE_DIR, 'config.ini')
 if not os.path.exists(CONFIG_PATH):
     raise FileNotFoundError(
         f"Config file not found at {CONFIG_PATH}\n"
-        f"Please ensure config.ini exists in the project root directory."
+        f"Please ensure config.ini exists in the project root directory.\n"
+        f"To create it, copy config.ini.example to config.ini and fill in your API key."
     )
 
 # Initialize configparser with defaults

@@ -3,6 +3,18 @@
 All notable changes to the EDITED API Use Case Guides are recorded here.
 This project follows [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH`.
 
+## [1.1.2] - 2026-11-06
+
+### Changed
+- `config.ini` is no longer tracked and is now gitignored, so a real EDITED API
+  key can't be committed by accident. A placeholder-only template,
+  `config.ini.example`, is provided instead: copy it to `config.ini` and fill in
+  your key. The README and the "config not found" error now say so.
+  **Upgrading an existing clone:** back up your `config.ini` before `git pull`.
+  An unmodified file is deleted by the pull; a file you have edited (e.g. with
+  your key) makes the pull stop with an error until you move it aside, then
+  copy it back afterwards.
+
 ## [1.1.1] - 2026-09-01
 
 ### Fixed

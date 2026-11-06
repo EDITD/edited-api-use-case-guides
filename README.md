@@ -23,7 +23,15 @@ git clone https://github.com/EDITD/edited-api-use-case-guides.git
 
 ### Configuration
 
-These use case guides require a configuration file named `config.ini` to be placed in the root directory of the project. A sample version has been put in place, but you must edit it to use your provided API Key as well as any other optional configurations which might be used by the sample use cases guides.
+These use case guides require a configuration file named `config.ini` to be placed in the root directory of the project. Copy the template `config.ini.example` to `config.ini` and edit it to use your provided API Key as well as any other optional configurations which might be used by the sample use cases guides.
+
+```
+cp config.ini.example config.ini      # Windows: copy config.ini.example config.ini
+```
+
+`config.ini` is gitignored so your key is never committed; only the placeholder template `config.ini.example` is tracked. Never put a real key in `config.ini.example`.
+
+Template contents:
 
 ```
 #config.ini
